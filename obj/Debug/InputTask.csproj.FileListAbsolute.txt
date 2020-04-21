@@ -1,0 +1,7 @@
+D:\C#\_Modem\InputTask\bin\Debug\InputTask.exe.config
+D:\C#\_Modem\InputTask\bin\Debug\InputTask.exe
+D:\C#\_Modem\InputTask\bin\Debug\InputTask.pdb
+D:\C#\_Modem\InputTask\obj\Debug\InputTask.csprojAssemblyReference.cache
+D:\C#\_Modem\InputTask\obj\Debug\InputTask.csproj.CoreCompileInputs.cache
+D:\C#\_Modem\InputTask\obj\Debug\InputTask.exe
+D:\C#\_Modem\InputTask\obj\Debug\InputTask.pdb
