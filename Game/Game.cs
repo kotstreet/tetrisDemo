@@ -36,7 +36,7 @@ public static class Game
 
     internal static TypeOfCell[,] GameField;
 
-    public static void Start()
+    /*public static void Start()
     {
         InitializeStaticComponents();
 
@@ -51,8 +51,9 @@ public static class Game
         //AutoMoveDown();
         //AutoMoveDown();
         //var cancellationTokenSource = MoveByKey();
+        var cancellationTokenSource = AutoMoveDown();
 
-        
+
         while (true)
         {
             //refresh all game field because it can be incorrect print
@@ -63,7 +64,7 @@ public static class Game
             if (isTheEnd)
             {
                 //stop task(stop read key keys for move figure)
-                //cancellationTokenSource.Cancel();
+                cancellationTokenSource.Cancel();
 
                 //exit from game
                 Exit.ExitAfterGame(_score);
@@ -77,28 +78,163 @@ public static class Game
             {
                 //read key from console and move
                 var key = Console.ReadKey().Key;//
-                isExistsDescendingFigure = Move(key);//
-
-
-                /*
-                Thread.Sleep(Constants.FigureFallDelay);
-                lock (locker)
+                lock(locker)
                 {
-                    isExistsDescendingFigure = MoveDown();
-                }*/
+                    isExistsDescendingFigure = Move(key);//
 
-                /*_mutex.WaitOne();
-                isExistsDescendingFigure = MoveDown();
-                _mutex.ReleaseMutex();*/
+                }
 
                 if (isExistsDescendingFigure == false)
                 {
                     CheckAndAddScore();
                     break;
                 }
+
+
+                //
+                //Thread.Sleep(Constants.FigureFallDelay);
+                //lock (locker)
+                //{
+                //    isExistsDescendingFigure = MoveDown();
+                //}
+
+                ///_mutex.WaitOne();
+                ///isExistsDescendingFigure = MoveDown();
+                ///_mutex.ReleaseMutex();
+
             }
         }
         
+    }*/
+    public static void Start()
+    {
+        InitializeStaticComponents();
+
+        Console.Clear();
+
+        ShowStartGameField();
+
+        //generate next figure before start game
+        _nextFigure = FigureGenerator.Generate();
+        Thread.Sleep(15);//because computer generate two the same figure without it
+
+        //AutoMoveDown();
+        //AutoMoveDown();
+        var cancellationTokenSource = MoveByKey();
+        //var cancellationTokenSource = AutoMoveDown();
+
+        var isExistsDescendingFigure = true;
+
+        while (true)
+        {
+            //refresh all game field because it can be incorrect print
+            // ReFillAllGameField();
+            Thread.Sleep(Constants.FigureFallDelay);
+            lock (locker)
+            {
+
+                isExistsDescendingFigure = MoveDown();
+
+                if (isExistsDescendingFigure == false)
+                {
+                    CheckAndAddScore();
+                    //for correct outfit of game field
+                    RewriteRightBorderGameField();
+
+
+                    //exit if imposible insert new figure
+                    var isTheEnd = GenerateNewFigures();
+                    if (isTheEnd)
+                        {
+                        //stop task(stop read key keys for move figure)
+                        cancellationTokenSource.Cancel();
+
+                        //exit from game
+                        Exit.ExitAfterGame(_score);
+                    }
+
+                    //for refresh
+                    isExistsDescendingFigure = true;
+                }
+            }
+            //read key from console and move
+            //var key = Console.ReadKey().Key;//
+                
+            //isExistsDescendingFigure = Move(key);//
+   
+            //Thread.Sleep(Constants.FigureFallDelay);
+            //lock (locker)
+            //{
+            //    isExistsDescendingFigure = MoveDown();
+            //}
+
+            //_mutex.WaitOne();
+            //isExistsDescendingFigure = MoveDown();
+            //_mutex.ReleaseMutex();
+
+        }
+    }
+
+    private static void RewriteRightBorderGameField()
+    {
+        for(int row = 0; row < RowGameFieldCount; row++)
+        {
+            Console.ForegroundColor = GetColorGameField(GameField[row, 9]);
+            Console.SetCursorPosition(Constants.LeftShiftOfGameFieldStartPoint + 9, row + Constants.TopShiftOfGameFieldStartPoint);
+            Console.Write($"{Constants.Squere}{Constants.Space}");
+        }
+
+        Console.SetCursorPosition(0, 0);
+        Console.ForegroundColor = Constants.MainColor;
+    }
+
+    private static CancellationTokenSource AutoMoveDown()
+    {
+        var cancellationTokenSource = new CancellationTokenSource();
+        var token = cancellationTokenSource.Token;
+
+        var move = Task.Factory.StartNew(() =>
+        {
+            while (token.IsCancellationRequested == false)
+            {
+
+                //exit if imposible insert new figure
+
+
+                //for refresh
+                var isExistsDescendingFigure = true;
+
+                //work with the current figure
+
+                Thread.Sleep(Constants.FigureFallDelay);
+                lock (locker)
+                {
+                    isExistsDescendingFigure = MoveDown();
+
+                    if (isExistsDescendingFigure == false)  
+                    {
+
+                        CheckAndAddScore();
+
+                        var isTheEnd = GenerateNewFigures();
+                        if (isTheEnd)
+                        {
+                            //stop task(stop read key keys for move figure)
+                            cancellationTokenSource.Cancel();
+
+                            //exit from game
+                            Exit.ExitAfterGame(_score);
+                        }
+
+                        //for refresh
+                        isExistsDescendingFigure = true;
+                
+                    }
+                }
+            }
+        });
+
+        return cancellationTokenSource;
     }
 
     private static void ReFillAllGameField()
@@ -130,65 +266,23 @@ public static class Game
             while (token.IsCancellationRequested == false)
             {
                 var key = Console.ReadKey().Key;
-                if(token.IsCancellationRequested == false)
+                lock (locker)
                 {
-                    lock (locker)
+                    if (token.IsCancellationRequested == false)
                     {
                         Move(key);
                     }
-                }
-            }
-        });
-
-        return cancellationTokenSource;
-    }
-
-    private static CancellationTokenSource AutoMoveDown()
-    {
-        var cancellationTokenSource = new CancellationTokenSource();
-        var token = cancellationTokenSource.Token;
-
-        var move = Task.Factory.StartNew(() =>
-        {
-            while (token.IsCancellationRequested == false)
-            {
-                var key = Console.ReadKey().Key;
-                if (token.IsCancellationRequested == false)
-                {
-                    lock (locker)
+                    else
                     {
-                        while (true)
+                        //for clear after read a char(it is neccessary in inputing name)
+                        var left = Console.CursorLeft;
+                        var top = Console.CursorTop;
+
+                        if (left > 0)
                         {
-                            //exit if imposible insert new figure
-                            var isTheEnd = GenerateNewFigures();
-                            if (isTheEnd)
-                            {
-                                //stop task(stop read key keys for move figure)
-                                //cancellationTokenSource.Cancel();
-
-                                //exit from game
-                                Exit.ExitAfterGame(_score);
-                            }
-
-                            //for refresh
-                            var isExistsDescendingFigure = true;
-
-                            //work with the current figure
-                            while (true)
-                            {
-                                Thread.Sleep(Constants.FigureFallDelay);
-                                lock (locker)
-                                {
-                                    isExistsDescendingFigure = MoveDown();
-                                }
-
-
-                                if (isExistsDescendingFigure == false)
-                                {
-                                    CheckAndAddScore();
-                                    break;
-                                }
-                            }
+                            Console.SetCursorPosition(left - 1, top);
+                            Console.Write(Constants.Space);
+                            Console.SetCursorPosition(left - 1, top);
                         }
                     }
                 }
@@ -197,6 +291,8 @@ public static class Game
 
         return cancellationTokenSource;
     }
+
+   
 
     internal static Point[] FindOldPoints()
     {
