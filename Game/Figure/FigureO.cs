@@ -8,11 +8,6 @@ public class FigureO : Figure
 {
     public const ConsoleColor FigureOColor = ConsoleColor.Gray;
 
-
-
-
-
-
     public FigureO()
     {
         _consoleColor = FigureOColor;
@@ -23,7 +18,6 @@ public class FigureO : Figure
     {
         Print(Constants.CenterForDisplayNextFigureColumn, Constants.CenterForDisplayNextFigureRow);
     }
-
 
     public override ConsoleColor InsertToGame(out bool canBeFilled)
     {
@@ -44,7 +38,6 @@ public class FigureO : Figure
 
         return ConsoleColor;
     }
-
 
     private void EnterTheFigure()
     {

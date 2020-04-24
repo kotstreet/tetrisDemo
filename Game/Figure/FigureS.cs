@@ -9,9 +9,6 @@ public class FigureS : Figure
 {
     public const ConsoleColor FigureSColor = ConsoleColor.Blue;
 
-
-
-
     public FigureS()
     {
         _consoleColor = FigureSColor;

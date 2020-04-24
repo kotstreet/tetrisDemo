@@ -8,11 +8,6 @@ public class FigureT : Figure
 {
     public const ConsoleColor FigureTColor = ConsoleColor.Cyan;
 
-
-
-
-
-
     public FigureT()
     {
         _consoleColor = FigureTColor;

@@ -8,8 +8,6 @@ public class FigureL : Figure
 {
     public const ConsoleColor FigureLColor = ConsoleColor.Red;
 
-
-
     public FigureL()
     {
         _consoleColor = FigureLColor;

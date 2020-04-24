@@ -8,11 +8,6 @@ public class FigureJ : Figure
 {
     public const ConsoleColor FigureJColor = ConsoleColor.Green;
 
-
-
-
-
-
     public FigureJ()
     {
         _consoleColor = FigureJColor;
@@ -23,7 +18,6 @@ public class FigureJ : Figure
     {
         Print(Constants.CenterForDisplayNextFigureColumn, Constants.CenterForDisplayNextFigureRow);
     }
-
 
     public override ConsoleColor InsertToGame(out bool canBeFilled)
     {

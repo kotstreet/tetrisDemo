@@ -58,14 +58,7 @@
     <Compile Include="Game\LeftOrRightMove.cs" />
     <Compile Include="Game\Point.cs" />
     <Compile Include="Game\TypeOfCell.cs" />
-    <Compile Include="Menu\Exit.cs" />
-    <Compile Include="Menu\MainMenu.cs" />
-    <Compile Include="Menu\MenuPoint.cs" />
-    <Compile Include="Menu\MenuPointChoice.cs" />
-    <Compile Include="Menu\MenuPointForChoice.cs" />
-    <Compile Include="Menu\Records.cs" />
-    <Compile Include="Menu\Rules.cs" />
-    <Compile Include="Player.cs" />
+    <Compile Include="Exit.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkWithFont.cs" />

@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 public class FigureZ : Figure
 {
     public const ConsoleColor FigureZColor = ConsoleColor.DarkMagenta;
-
-
-
-
-
-
+    
     public FigureZ()
     {
         _consoleColor = FigureZColor;

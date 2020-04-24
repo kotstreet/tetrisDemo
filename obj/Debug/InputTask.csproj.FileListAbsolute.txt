@@ -5,3 +5,10 @@ D:\C#\_Modem\InputTask\obj\Debug\InputTask.csprojAssemblyReference.cache
 D:\C#\_Modem\InputTask\obj\Debug\InputTask.csproj.CoreCompileInputs.cache
 D:\C#\_Modem\InputTask\obj\Debug\InputTask.exe
 D:\C#\_Modem\InputTask\obj\Debug\InputTask.pdb
+D:\C#\InputTask\bin\Debug\InputTask.exe.config
+D:\C#\InputTask\bin\Debug\InputTask.exe
+D:\C#\InputTask\bin\Debug\InputTask.pdb
+D:\C#\InputTask\obj\Debug\InputTask.csprojAssemblyReference.cache
+D:\C#\InputTask\obj\Debug\InputTask.csproj.CoreCompileInputs.cache
+D:\C#\InputTask\obj\Debug\InputTask.exe
+D:\C#\InputTask\obj\Debug\InputTask.pdb

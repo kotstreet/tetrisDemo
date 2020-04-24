@@ -2,13 +2,10 @@
 
 public static class FigureGenerator
 {
-    public const int GeneratedValueForS = 1;
-    public const int GeneratedValueForZ = 2;
-    public const int GeneratedValueForT = 3;
-    public const int GeneratedValueForL = 4;
-    public const int GeneratedValueForJ = 5;
-    public const int GeneratedValueForO = 6;
-
+    /// <summary>
+    /// Generate new figure
+    /// </summary>
+    /// <returns>new figure</returns>
     public static Figure Generate()
     {
         var random = new Random();
@@ -16,17 +13,17 @@ public static class FigureGenerator
 
         switch(generatedValue)
         {
-            case GeneratedValueForS:
+            case Constants.GeneratedValueForS:
                 return new FigureS();
-            case GeneratedValueForZ:
+            case Constants.GeneratedValueForZ:
                 return new FigureZ();
-            case GeneratedValueForT:
+            case Constants.GeneratedValueForT:
                 return new FigureT();
-            case GeneratedValueForO:
+            case Constants.GeneratedValueForO:
                 return new FigureO();
-            case GeneratedValueForL:
+            case Constants.GeneratedValueForL:
                 return new FigureL();
-            case GeneratedValueForJ:
+            case Constants.GeneratedValueForJ:
                 return new FigureJ();
             default:
                 return new FigureI();

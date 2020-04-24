@@ -9,10 +9,6 @@ public  class FigureI : Figure
     public const ConsoleColor FigureIColor = ConsoleColor.Yellow;
 
 
-
-
-
-
     public FigureI()
     {
         _consoleColor = FigureIColor;

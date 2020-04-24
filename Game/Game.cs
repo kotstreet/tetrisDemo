@@ -9,103 +9,17 @@ using System.Threading.Tasks;
 
 public static class Game
 {
-    public const char SpaceCharacter = ' ';
-
-    public const string ScoreIs = "Счёт: {0}";
-    public const string LinesIs = "Линий: {0}";
-
-    public const int RowGameFieldCount = 20;
-    public const int ColumnGameFieldCount = 10;
-
-
-
-
-
-
-    //private static Mutex _mutex;
-
     private static List<Figure> Figures;
-
     private static object locker;
-    //private static Mutex _mutex;
 
-    private static int _score = 0;
-    private static int _lines = 0;
     private static Figure _currentFigure = null;
     private static Figure _nextFigure = null;
 
-    internal static TypeOfCell[,] GameField;
+    public static TypeOfCell[,] GameField;
 
-    /*public static void Start()
-    {
-        InitializeStaticComponents();
-
-        Console.Clear();
-
-        ShowStartGameField();
-
-        //generate next figure before start game
-        _nextFigure = FigureGenerator.Generate();
-        Thread.Sleep(15);//because computer generate two the same figure without it
-
-        //AutoMoveDown();
-        //AutoMoveDown();
-        //var cancellationTokenSource = MoveByKey();
-        var cancellationTokenSource = AutoMoveDown();
-
-
-        while (true)
-        {
-            //refresh all game field because it can be incorrect print
-            // ReFillAllGameField();
-
-            //exit if imposible insert new figure
-            var isTheEnd = GenerateNewFigures();
-            if (isTheEnd)
-            {
-                //stop task(stop read key keys for move figure)
-                cancellationTokenSource.Cancel();
-
-                //exit from game
-                Exit.ExitAfterGame(_score);
-            }
-
-            //for refresh
-            var isExistsDescendingFigure = true;
-
-            //work with the current figure
-            while (true)
-            {
-                //read key from console and move
-                var key = Console.ReadKey().Key;//
-                lock(locker)
-                {
-                    isExistsDescendingFigure = Move(key);//
-
-                }
-
-                if (isExistsDescendingFigure == false)
-                {
-                    CheckAndAddScore();
-                    break;
-                }
-
-
-                //
-                //Thread.Sleep(Constants.FigureFallDelay);
-                //lock (locker)
-                //{
-                //    isExistsDescendingFigure = MoveDown();
-                //}
-
-                ///_mutex.WaitOne();
-                ///isExistsDescendingFigure = MoveDown();
-                ///_mutex.ReleaseMutex();
-
-            }
-        }
-        
-    }*/
+    /// <summary>
+    /// Start game
+    /// </summary>
     public static void Start()
     {
         InitializeStaticComponents();
@@ -118,10 +32,8 @@ public static class Game
         _nextFigure = FigureGenerator.Generate();
         Thread.Sleep(15);//because computer generate two the same figure without it
 
-        //AutoMoveDown();
-        //AutoMoveDown();
-        var cancellationTokenSource = MoveByKey();
-        //var cancellationTokenSource = AutoMoveDown();
+        //var cancellationTokenSource = MoveByKey();
+        var cancellationTokenSource = AutoMoveDown();
 
         var isExistsDescendingFigure = true;
 
@@ -129,65 +41,64 @@ public static class Game
         {
             //refresh all game field because it can be incorrect print
             // ReFillAllGameField();
-            Thread.Sleep(Constants.FigureFallDelay);
+
+
+            var key = Console.ReadKey().Key;
+            //Thread.Sleep(Constants.FigureFallDelay);
             lock (locker)
             {
-
-                isExistsDescendingFigure = MoveDown();
+                //isExistsDescendingFigure = MoveDown();
+                isExistsDescendingFigure = Move(key);
 
                 if (isExistsDescendingFigure == false)
                 {
-                    CheckAndAddScore();
+                    ResetgameFiledAfterFilledRows();
                     //for correct outfit of game field
-                    RewriteRightBorderGameField();
-
+                    //RewriteRightBorderGameField();
+                    RewriteAllGameField();
 
                     //exit if imposible insert new figure
                     var isTheEnd = GenerateNewFigures();
                     if (isTheEnd)
-                        {
+                    {
                         //stop task(stop read key keys for move figure)
                         cancellationTokenSource.Cancel();
 
                         //exit from game
-                        Exit.ExitAfterGame(_score);
+                        Exit.Leave();
                     }
 
                     //for refresh
                     isExistsDescendingFigure = true;
                 }
             }
-            //read key from console and move
-            //var key = Console.ReadKey().Key;//
-                
-            //isExistsDescendingFigure = Move(key);//
-   
-            //Thread.Sleep(Constants.FigureFallDelay);
-            //lock (locker)
-            //{
-            //    isExistsDescendingFigure = MoveDown();
-            //}
-
-            //_mutex.WaitOne();
-            //isExistsDescendingFigure = MoveDown();
-            //_mutex.ReleaseMutex();
 
         }
     }
 
-    private static void RewriteRightBorderGameField()
+    /// <summary>
+    /// rewrite game field and one more cell after every row
+    /// </summary>
+    private static void RewriteAllGameField()
     {
-        for(int row = 0; row < RowGameFieldCount; row++)
+        for (int row = 0; row < Program.RowGameFieldCount; row++)
         {
-            Console.ForegroundColor = GetColorGameField(GameField[row, 9]);
-            Console.SetCursorPosition(Constants.LeftShiftOfGameFieldStartPoint + 9, row + Constants.TopShiftOfGameFieldStartPoint);
-            Console.Write($"{Constants.Squere}{Constants.Space}");
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
+            {
+                Console.ForegroundColor = GetColorGameField(GameField[row, column]);
+                Console.SetCursorPosition(Constants.LeftShiftOfGameFieldStartPoint + column, row + Constants.TopShiftOfGameFieldStartPoint);
+                Console.Write($"{Constants.Squere}{Constants.Space}");
+            }
         }
 
         Console.SetCursorPosition(0, 0);
         Console.ForegroundColor = Constants.MainColor;
     }
 
+    /// <summary>
+    /// auto move descending block down in the other thread
+    /// </summary>
+    /// <returns>token source for stop move down</returns>
     private static CancellationTokenSource AutoMoveDown()
     {
         var cancellationTokenSource = new CancellationTokenSource();
@@ -197,24 +108,21 @@ public static class Game
         {
             while (token.IsCancellationRequested == false)
             {
-
-                //exit if imposible insert new figure
-
-
                 //for refresh
                 var isExistsDescendingFigure = true;
 
                 //work with the current figure
 
-                Thread.Sleep(Constants.FigureFallDelay);
+                Thread.Sleep(Program.FigureFallDelay);
                 lock (locker)
                 {
                     isExistsDescendingFigure = MoveDown();
 
                     if (isExistsDescendingFigure == false)  
                     {
+                        ResetgameFiledAfterFilledRows();
 
-                        CheckAndAddScore();
+                        RewriteAllGameField();
 
                         var isTheEnd = GenerateNewFigures();
                         if (isTheEnd)
@@ -223,7 +131,7 @@ public static class Game
                             cancellationTokenSource.Cancel();
 
                             //exit from game
-                            Exit.ExitAfterGame(_score);
+                            Exit.Leave();
                         }
 
                         //for refresh
@@ -237,63 +145,10 @@ public static class Game
         return cancellationTokenSource;
     }
 
-    private static void ReFillAllGameField()
-    {
-        for (int row = 0; row < RowGameFieldCount; row++)
-        {
-            //shift
-            for (int column = 0; column < ColumnGameFieldCount; column++)
-            {
-                Console.SetCursorPosition( Constants.LeftShiftOfGameFieldStartPoint + column, Constants.TopShiftOfGameFieldStartPoint + row);
-
-                Console.ForegroundColor = GetColorGameField(Game.GameField[row, column]);
-
-                Console.Write(Constants.Squere);
-            }
-
-            Console.Write(Constants.Space);
-        }
-        
-    }
-
-    private static CancellationTokenSource MoveByKey()
-    {
-        var cancellationTokenSource = new CancellationTokenSource();
-        var token = cancellationTokenSource.Token;
-
-        var move = Task.Factory.StartNew(() =>
-        {
-            while (token.IsCancellationRequested == false)
-            {
-                var key = Console.ReadKey().Key;
-                lock (locker)
-                {
-                    if (token.IsCancellationRequested == false)
-                    {
-                        Move(key);
-                    }
-                    else
-                    {
-                        //for clear after read a char(it is neccessary in inputing name)
-                        var left = Console.CursorLeft;
-                        var top = Console.CursorTop;
-
-                        if (left > 0)
-                        {
-                            Console.SetCursorPosition(left - 1, top);
-                            Console.Write(Constants.Space);
-                            Console.SetCursorPosition(left - 1, top);
-                        }
-                    }
-                }
-            }
-        });
-
-        return cancellationTokenSource;
-    }
-
-   
-
+    /// <summary>
+    /// Find points of descending blocks with the center point in a 0 element
+    /// </summary>
+    /// <returns>finded points</returns>
     internal static Point[] FindOldPoints()
     {
         //create new array of point and initialize it with -1, because if we shall not find any points array should not be consider any points which 
@@ -312,9 +167,9 @@ public static class Game
         var basicBlockIndexInArray = 0;
 
         //find the center and other blocks of current Figure
-        for (int row = 0; row < RowGameFieldCount; row++)
+        for (int row = 0; row < Program.RowGameFieldCount; row++)
         {
-            for (int column = 0; column < ColumnGameFieldCount; column++)
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
             {
                 //fill points array
                 if (GameField[row, column] == TypeOfCell.Descending)
@@ -339,6 +194,10 @@ public static class Game
         return points;
     }
 
+    /// <summary>
+    /// reset to empty descending blocks in console
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
     internal static void ResetOldDataInGameFieldInConsole(Point[] oldPoints)
     {
         //reset data
@@ -353,6 +212,10 @@ public static class Game
         Console.SetCursorPosition(0, 0);
     }
 
+    /// <summary>
+    /// reset to empty descending blocks in array
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
     internal static void ResetOldDataInGameFieldInArray(Point[] oldPoints)
     {
         //reset data
@@ -362,18 +225,27 @@ public static class Game
         }
     }
 
-
-
     #region for move left or right
+    /// <summary>
+    /// move the current figere left
+    /// </summary>
     private static void MoveLeft()
     {
         MoveLeftOrRight(LeftOrRightMove.Left);
     }
+
+    /// <summary>
+    /// move the current figere right
+    /// </summary>
     private static void MoveRight()
     {
         MoveLeftOrRight(LeftOrRightMove.Right);
     }
 
+    /// <summary>
+    /// move current figure left or right
+    /// </summary>
+    /// <param name="leftOrRightMove">the parameter which get information aboute move(left or right)</param>
     private static void MoveLeftOrRight(LeftOrRightMove leftOrRightMove)
     {
         var oldPoints = FindOldPoints();
@@ -395,6 +267,11 @@ public static class Game
         FillConsoleForMoveLeftOrRight(oldPoints, leftOrRightMove);
     }
 
+    /// <summary>
+    /// reset array for move(left or right)
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    /// <param name="leftOrRightMove">the parameter which get information aboute move(left or right)</param>
     private static void FillArrayForMoveLeftOrRight(Point[] oldPoints, LeftOrRightMove leftOrRightMove)
     {
         //reset data
@@ -406,6 +283,11 @@ public static class Game
 
     }
 
+    /// <summary>
+    /// reset console for move(left or right)
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    /// <param name="leftOrRightMove">the parameter which get information aboute move(left or right)</param>
     private static void FillConsoleForMoveLeftOrRight(Point[] oldPoints, LeftOrRightMove leftOrRightMove)
     {
         //set new foreground color
@@ -424,6 +306,12 @@ public static class Game
         Console.ForegroundColor = Constants.MainColor;
     }
 
+    /// <summary>
+    /// check if we can move figure (left or right)
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    /// <param name="leftOrRightMove">the parameter which get information aboute move(left or right)</param>
+    /// <returns>true if we can</returns>
     private static bool CheckForMoveLeftOrRight(Point[] oldPoints, LeftOrRightMove leftOrRightMove)
     {
         //for move left
@@ -433,7 +321,7 @@ public static class Game
         }
 
         // for move right
-        if (oldPoints.Max(point => point.LeftShift) + 1 == ColumnGameFieldCount &&  leftOrRightMove == LeftOrRightMove.Right)
+        if (oldPoints.Max(point => point.LeftShift) + 1 == Program.ColumnGameFieldCount &&  leftOrRightMove == LeftOrRightMove.Right)
         {
             return false;
         }
@@ -454,7 +342,123 @@ public static class Game
     }
     #endregion for move left or right
 
+    #region for rotate
+    /// <summary>
+    /// Rotate current figere
+    /// </summary>
+    /// <param name="currentFigure">current figure</param>
+    public static void Rotate(Figure currentFigure)
+    {
+        var oldPoints = Game.FindOldPoints();
+
+        var canRotate = CheckForRotate(oldPoints);
+
+        //save blocks as static one and exit the method
+        if (canRotate == false)
+        {
+            return;
+        }
+
+        Game.ResetOldDataInGameFieldInArray(oldPoints);
+
+        Game.ResetOldDataInGameFieldInConsole(oldPoints);
+
+        FillArrayForRotate(oldPoints);
+
+        FillConsoleForRotate(currentFigure, oldPoints);
+    }
+
+    /// <summary>
+    /// fill array with new points for rotate
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    private static void FillArrayForRotate(Point[] oldPoints)
+    {
+        //reset data for center
+        Game.GameField[oldPoints[0].TopShift, oldPoints[0].LeftShift] = TypeOfCell.CenterOfFigure;
+
+        //reset data for other blocks
+        for (int index = 1; index < 4; index++)
+        {
+            var point = FindNewShift(oldPoints[0], oldPoints[index]);
+
+            //replace by rule: d_left => d_top; d_top => -d_left; rule from rotate by 90 deg
+            Game.GameField[point.TopShift, point.LeftShift] = TypeOfCell.Descending;
+        }
+    }
+
+    /// <summary>
+    /// print rotated figure in the console
+    /// </summary>
+    /// <param name="currentFigure">current figure</param>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    private static void FillConsoleForRotate(Figure currentFigure, Point[] oldPoints)
+    {
+        //set new foreground color
+        Console.ForegroundColor = currentFigure.ConsoleColor;
+
+        //reset data
+        for (int index = 0; index < 4; index++)
+        {
+            var point = FindNewShift(oldPoints[0], oldPoints[index]);
+
+            Console.SetCursorPosition(point.LeftShift + Constants.LeftShiftOfGameFieldStartPoint,
+                point.TopShift + Constants.TopShiftOfGameFieldStartPoint);
+            Console.Write(Constants.Squere);
+        }
+
+        //reset old parameters
+        Console.SetCursorPosition(0, 0);
+        Console.ForegroundColor = Constants.MainColor;
+    }
+
+    /// <summary>
+    /// find new point for rotate
+    /// </summary>
+    /// <param name="centralPoint">central point of current figure</param>
+    /// <param name="point">point for rotate</param>
+    /// <returns>rotated point</returns>
+    private static Point FindNewShift(Point centralPoint, Point point)
+    {
+        //find delta
+        var deltaLeftShift = centralPoint.LeftShift - point.LeftShift;
+        var deltaTopShift = centralPoint.TopShift - point.TopShift;
+
+        //get new left and top shifts 
+        var leftShift = centralPoint.LeftShift + deltaTopShift;
+        var topShift = centralPoint.TopShift - deltaLeftShift;
+
+        return new Point(leftShift, topShift);
+    }
+
+    /// <summary>
+    /// check if we can rotete figure
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    /// <returns>true if we can</returns>
+    private static bool CheckForRotate(Point[] oldPoints)
+    {
+        for (int index = 1; index < 4; index++)
+        {
+            var point = FindNewShift(oldPoints[0], oldPoints[index]);
+
+            //check for borders and for value of game field
+            if (point.LeftShift < 0 || point.LeftShift >= Program.ColumnGameFieldCount || point.TopShift < 0 || point.TopShift >= Program.RowGameFieldCount ||
+                Game.GameField[point.TopShift, point.LeftShift] <= TypeOfCell.Static)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    #endregion for rotate
+
     #region for  move down
+    /// <summary>
+    /// move the current figure down
+    /// </summary>
+    /// <returns>true if we moved figure down</returns>
     private static bool MoveDown()
     {
         var oldPoints = FindOldPoints();
@@ -479,6 +483,10 @@ public static class Game
         return canMoveDown;
     }
 
+    /// <summary>
+    /// Set in array moved figure down
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
     private static void FillArrayForMoveDown(Point[] oldPoints)
     {
         //reset data
@@ -490,6 +498,10 @@ public static class Game
         
     }
 
+    /// <summary>
+    /// Set in console moved figure down
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
     private static void FillConsoleForMoveDown(Point[] oldPoints)
     {
         //set new foreground color
@@ -508,6 +520,10 @@ public static class Game
         Console.ForegroundColor = Constants.MainColor;
     }
 
+    /// <summary>
+    /// set descendig blocks in array as statics blocks
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
     private static void ResetOldDataInGameFieldToStatic(Point[] oldPoints)
     {
         //return if we have not got old pointes
@@ -523,9 +539,14 @@ public static class Game
         }
     }
 
+    /// <summary>
+    /// Check if we can move figure down
+    /// </summary>
+    /// <param name="oldPoints">old points of descending blocks</param>
+    /// <returns>true if we can</returns>
     private static bool CheckForMoveDown(Point[] oldPoints)
     {
-        if ((oldPoints.Max(point => point.TopShift) + 1 == RowGameFieldCount) ||
+        if ((oldPoints.Max(point => point.TopShift) + 1 == Program.RowGameFieldCount) ||
             (oldPoints.Max(point => point.TopShift)  == -1) ||
             (GameField[oldPoints[0].TopShift + 1, oldPoints[0].LeftShift] <= TypeOfCell.Static) ||
             (GameField[oldPoints[1].TopShift + 1, oldPoints[1].LeftShift] <= TypeOfCell.Static) ||
@@ -542,7 +563,10 @@ public static class Game
     #endregion for move down
 
     #region for check on filled row
-    private static void  CheckAndAddScore()
+    /// <summary>
+    /// if the any row filled then we reprint game field without the row
+    /// </summary>
+    private static void  ResetgameFiledAfterFilledRows()
     {
         var filledRows = FindFilledRows();
 
@@ -555,25 +579,22 @@ public static class Game
 
         RefreshGameFieldAfterFilledRows(filledRows, countOfFilledRow);
 
-        AddScore(countOfFilledRow);
-        AddLines(countOfFilledRow);
-
-        RewriteScore();
-        RewriteLines();
-
         ReWriteGameFieldAfterFilledRows();
     }
 
+    /// <summary>
+    /// reprint game field
+    /// </summary>
     private static void ReWriteGameFieldAfterFilledRows()
     {
         //rewrite console game field
-        for (int row = 0; row < RowGameFieldCount; row++)
+        for (int row = 0; row < Program.RowGameFieldCount; row++)
         {
             //set cursor position to the new row
             Console.SetCursorPosition(Constants.LeftShiftOfGameFieldStartPoint, Constants.TopShiftOfGameFieldStartPoint + row);
 
             //write squere with necessary color 
-            for (int column = 0; column < ColumnGameFieldCount; column++)
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
             {
                 Console.ForegroundColor = GetColorGameField(Game.GameField[row, column]);
                 Console.Write(Constants.Squere);
@@ -585,6 +606,11 @@ public static class Game
         Console.ForegroundColor = Constants.MainColor;
     }
 
+    /// <summary>
+    /// Reset array of game field after filled row
+    /// </summary>
+    /// <param name="filledRows">numbers of fiiled rows</param>
+    /// <param name="countOfFilledRow">count of filled rows</param>
     private static void RefreshGameFieldAfterFilledRows(int[] filledRows, int countOfFilledRow)
     {
         var shift = 1;
@@ -605,7 +631,7 @@ public static class Game
             }
 
             //shift
-            for (int column = 0; column < ColumnGameFieldCount; column++)
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
             {
                 Game.GameField[row, column] = Game.GameField[row - shift, column];
             }
@@ -614,24 +640,28 @@ public static class Game
         //add new rows to the top
         for (int row = 0; row < countOfFilledRow; row++)
         {
-            for (int column = 0; column < ColumnGameFieldCount; column++)
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
             {
                 Game.GameField[row, column] = TypeOfCell.Empty;
             }
         }
     }
 
+    /// <summary>
+    /// find rows which was filled
+    /// </summary>
+    /// <returns>filled rows</returns>
     private static int[] FindFilledRows()
     {
         var filledRow = new int[4] { -1, -1, -1, -1 };
         var index = 0;
 
-        for (int row = RowGameFieldCount - 1; row > 0 ; row--)
+        for (int row = Program.RowGameFieldCount - 1; row > 0 ; row--)
         {
             var isFilled = true;
             var isEmpty = true;
 
-            for (int column = 0; column < ColumnGameFieldCount; column++)
+            for (int column = 0; column < Program.ColumnGameFieldCount; column++)
             {
                 //check for filled row
                 if (Game.GameField[row, column] == TypeOfCell.Empty)
@@ -662,48 +692,11 @@ public static class Game
         return filledRow;
     }
 
-    private static void RewriteScore()
-    {
-        //save old cursor position
-        var leftShift = Console.CursorLeft;
-        var topShift = Console.CursorTop;
-
-        //set new cursor posistion
-        Console.SetCursorPosition(Constants.ColumnForDisplayScoreValue, Constants.RowForDisplayScore);
-
-        //write new score
-        Console.Write(_score);
-
-        //rollback all settings
-        Console.SetCursorPosition(leftShift, topShift);
-    }
-
-    private static void RewriteLines()
-    {
-        //save old cursor position
-        var leftShift = Console.CursorLeft;
-        var topShift = Console.CursorTop;
-
-        //set new cursor posistion
-        Console.SetCursorPosition(Constants.ColumnForDisplayLinesValue, Constants.RowForDisplayLines);
-
-        //write new score
-        Console.Write(_lines);
-
-        //rollback all settings
-        Console.SetCursorPosition(leftShift, topShift);
-    }
-
-    private static void AddLines(int countOfFilledRow)
-    {
-        _lines += countOfFilledRow;
-    }
-
-    private static void AddScore(int countOfFilledRow)
-    {
-        _score += countOfFilledRow == 4 ? 100 : 10 * countOfFilledRow;
-    }
-
+    /// <summary>
+    /// find color of block in array for print
+    /// </summary>
+    /// <param name="typeOfCell">type of game field cell</param>
+    /// <returns>color of block</returns>
     private static ConsoleColor GetColorGameField(TypeOfCell typeOfCell)
     {
         //return console color
@@ -711,7 +704,6 @@ public static class Game
     }
 
     #endregion for check on filled row
-
 
     /// <summary>
     /// Move figure left, right, down or rotate the one
@@ -723,7 +715,7 @@ public static class Game
         switch(key)
         {
             case ConsoleKey.UpArrow:
-                _currentFigure.Rotate(_currentFigure);
+                Rotate(_currentFigure);
                 goto default;
 
             case ConsoleKey.DownArrow:
@@ -782,7 +774,6 @@ public static class Game
         Console.SetCursorPosition(left, top);
     }
 
-
     /// <summary>
     /// generate new figure insert the one in game and show next figure
     /// </summary>
@@ -813,14 +804,17 @@ public static class Game
     private static void ShowStartGameField()
     {
         //separator
+        
         Console.WriteLine();
         Console.WriteLine();
+        
 
         //string for diplay game field 
-        var gameField = new string(SpaceCharacter, 4) + new string(Constants.Squere, 10);
+        var gameField = new string(Constants.SpaceCharacter, Constants.CenterForDisplayNextFigureRow - Constants.CenterForStartPositionRowInConsole) 
+            + new string(Constants.Squere, Program.ColumnGameFieldCount);
 
         //display game field
-        for (var i = 0; i < RowGameFieldCount; i++)
+        for (var i = 0; i < Program.RowGameFieldCount; i++)
         {
             Console.WriteLine(gameField);
         }
@@ -830,14 +824,6 @@ public static class Game
 
         //output help
         PrintHelp();
-
-        //output score
-        Console.SetCursorPosition(Constants.ColumnForDisplayScoreCaption, Constants.RowForDisplayScore);
-        Console.WriteLine(ScoreIs, _score);
-
-        //output lines
-        Console.SetCursorPosition(Constants.ColumnForDisplayLinesCaption, Constants.RowForDisplayLines);
-        Console.WriteLine(LinesIs, _lines);
     }
 
     /// <summary>
@@ -846,10 +832,11 @@ public static class Game
     private static void PrintHelp()
     {
         //setting foreground
+        Console.SetCursorPosition(Constants.StartPositionLeftForDisplayHelp, Constants.StartPositionTopForDisplayHelp);
         Console.ForegroundColor = Constants.ColorForHelp;
 
         //print help
-        Console.Write($"Помощь: \u2190 и \u2192: перемещение,{Environment.NewLine}\u2191: поворот по часовой стрелке,{Environment.NewLine}\u2193: быстрый спуск");
+        Console.Write(Constants.HelpMessage, Environment.NewLine);
 
         //rollback all settings
         Console.ForegroundColor = Constants.MainColor;
@@ -880,10 +867,9 @@ public static class Game
     {
         InitializeFigureList();
 
-        GameField = new TypeOfCell[RowGameFieldCount, ColumnGameFieldCount];
+        GameField = new TypeOfCell[Program.RowGameFieldCount, Program.ColumnGameFieldCount];
         GameField.Initialize();
 
         locker = new object();
-        //_mutex = new Mutex();
     }
 }
